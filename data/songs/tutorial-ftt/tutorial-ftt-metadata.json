@@ -1,0 +1,59 @@
+{
+  "version": "2.2.4",
+  "songName": "Tutorial (FTT)",
+  "artist": "Aleon",
+  "charter": "SkyanUltra",
+  "divisions": 96,
+  "looped": false,
+  "offsets": {
+    "instrumental": 0,
+    "altInstrumentals": {    },
+    "vocals": {    },
+    "altVocals": {    }
+  },
+  "playData": {
+    "songVariations": [    ],
+    "difficulties": [
+      "easy",
+      "normal",
+      "hard"
+    ],
+    "characters": {
+      "player": "bf",
+      "girlfriend": "",
+      "opponent": "gf",
+      "instrumental": "",
+      "altInstrumentals": [      ],
+      "opponentVocals": [
+        "gf"
+      ],
+      "playerVocals": [
+        "bf"
+      ]
+    },
+    "stage": "mainStage",
+    "noteStyle": "funkin",
+    "ratings": {
+      "normal": 3
+    },
+    "previewStart": 0,
+    "previewEnd": 15000
+  },
+  "generatedBy": "Friday Night Funkin' - v0.6.2",
+  "timeFormat": "ms",
+  "timeChanges": [
+    {
+      "t": 0,
+      "b": 0,
+      "bpm": 89,
+      "n": 4,
+      "d": 4,
+      "bt": [
+        4,
+        4,
+        4,
+        4
+      ]
+    }
+  ]
+}
