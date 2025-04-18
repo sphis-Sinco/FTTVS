@@ -1,0 +1,11 @@
+{
+  "title": "From The Top Vertical Slice",
+  "description": "",
+  "api_version": "0.5.3",
+  "mod_version": "0.1.0",
+  "contributors": [
+    {"name": "Sinco", "role": "Director, Programmer"},
+    {"name": "Weggeboi", "role": "Playtester"}
+  ],
+  "license": "MIT"
+}

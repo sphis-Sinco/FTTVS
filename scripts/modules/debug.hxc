@@ -1,0 +1,141 @@
+import flixel.FlxG;
+import flixel.sound.FlxSound;
+import funkin.Conductor;
+import funkin.play.PlayState;
+import funkin.play.stage.Stage;
+import funkin.modding.module.Module;
+import flixel.tweens.FlxTween;
+import flixel.math.FlxMath;
+import funkin.play.song.Song;
+import funkin.data.event.SongEventRegistry;
+import flixel.text.FlxText;
+import flixel.text.FlxTextBorderStyle;
+import Std;
+
+class debug extends Module {
+
+    public function new(){
+        super('hahdsd');
+    }
+
+    var debugInfoText:FlxText;
+    var text:FlxText;
+
+    public function onUpdate(event:UpdateScriptEvent) {
+        super.onUpdate(event);
+        if (PlayState.instance == null) return;
+        if (FlxG.keys.justPressed.PAGEUP) changeSection(FlxG.keys.pressed.SHIFT ? 20 : 2);
+        if (FlxG.keys.justPressed.PAGEDOWN) changeSection(FlxG.keys.pressed.SHIFT ? -20 : -2);
+        if (FlxG.keys.justPressed.NUMPADONE) PlayState.instance.endSong(true);
+        if (FlxG.keys.justPressed.NUMPADSEVEN) PlayState.instance.camHUD.visible = !PlayState.instance.camHUD.visible;
+        if (FlxG.keys.justPressed.NUMPADTWO) PlayState.instance.health += 0.1 * 2;
+        if (FlxG.keys.justPressed.NUMPADTHREE) PlayState.instance.health -= 0.1 * 2;
+        if (FlxG.keys.justPressed.NUMPADFOUR) PlayState.instance.isBotPlayMode = !PlayState.instance.isBotPlayMode;
+        if (FlxG.keys.justPressed.NUMPADEIGHT) PlayState.instance.isPracticeMode = !PlayState.instance.isPracticeMode;
+        if (FlxG.keys.pressed.NUMPADFIVE) PlayState.instance.tweenCameraZoom(PlayState.instance.camGame.zoom - 0.05, 0.1, true);
+        if (FlxG.keys.pressed.NUMPADSIX) PlayState.instance.tweenCameraZoom(PlayState.instance.camGame.zoom + 0.05, 0.1, true);
+        if (FlxG.keys.justPressed.GRAVEACCENT) {
+            text.visible = !text.visible;
+            debugInfoText.visible = !debugInfoText.visible;
+        }
+
+    }
+
+    public function onStepHit(event:SongTimeScriptEvent) {
+        super.onStepHit(event);
+        if (event.step % 2 == 0) return; // for optimization purpose
+        if (debugInfoText != null) {
+            if (debugInfoText.visible) {
+
+            debugInfoText.text = "DEBUG INFO: \n\n" +
+            "SONG TIME: " + msToMinutesAndSeconds(Conductor.instance.songPosition) + "/" + (msToMinutesAndSeconds(FlxG.sound.music != null ? FlxG.sound.music.length : 0)) + "\n" +
+            "BOT PLAY MODE: " + PlayState.instance.isBotPlayMode + "\n" +
+            "PRACTICE MODE: " + PlayState.instance.isPracticeMode + "\n" +
+            "CHARTING MODE: " + PlayState.instance.isChartingMode + "\n" +
+            "IS STORY MODE: " + PlayState.instance.isStoryMode + "\n" +
+            "CURRENT HEALTH: " + PlayState.instance.health + "\n" +
+            "CURRENT CAMERA ZOOM: " + PlayState.instance.currentCameraZoom + "\n" +
+            "CURRENT BEAT: " + event.beat + "\n" +
+            "CURRENT STEP: " + event.step + "\n" +
+            "\nPress ` to hide this\n";
+
+            }
+        }
+    }
+
+    public function onCountdownStart(event:CountdownScriptEvent) {
+        super.onCountdownStart(event);
+
+        reset(text);
+        reset(debugInfoText);
+
+        text = new FlxText(10, 30, 0, "CONTROLS:\n\n");
+        text.setFormat(Paths.font('vcr.ttf'), 13, 0xFFFFFFFF, "left");
+        text.text += "PAGE UP: Skip forward 2 sections (hold SHIFT to skip 20)\n";
+        text.text += "PAGE DOWN: Skip back 2 sections (hold SHIFT to skip 20)\n";
+        text.text += "NUMPAD 1: End Song\n";
+        text.text += "NUMPAD 7: Toggle HUD\n";
+        text.text += "NUMPAD 2: Increase Health\n";
+        text.text += "NUMPAD 3: Decrease Health\n";
+        text.text += "NUMPAD 4: Toggle Bot Play Mode\n";
+        text.text += "NUMPAD 8: Toggle Practice Mode\n";
+        text.text += "NUMPAD 5: Zoom Out\n";
+        text.text += "NUMPAD 6: Zoom In\n";
+        text.text += "9: Toggle Old BF's Icon";
+        text.borderStyle = FlxTextBorderStyle.OUTLINE;
+        text.borderColor = 0xFF000000; 
+        text.borderSize = 0.5;
+        text.cameras = [PlayState.instance.camCutscene];
+        text.zIndex = 1000;
+        PlayState.instance.add(text);
+
+        debugInfoText = new FlxText(10, text.height + 50, 0, "");
+        debugInfoText.setFormat(Paths.font('vcr.ttf'), 13, 0xFFFFFFFF, "left");
+        debugInfoText.borderStyle = FlxTextBorderStyle.OUTLINE;
+        debugInfoText.borderColor = 0xFF000000; 
+        debugInfoText.borderSize = 0.5;
+        debugInfoText.cameras = [PlayState.instance.camCutscene];
+        debugInfoText.zIndex = 1000;
+        PlayState.instance.add(debugInfoText);
+    }
+
+    function changeSection(sections:Int):Void {
+      
+        var targetTimeSteps:Float = Conductor.instance.currentStepTime + (Conductor.instance.stepsPerMeasure * sections);
+        var targetTimeMs:Float = Conductor.instance.getStepTimeInMs(targetTimeSteps);
+      
+        // Don't go back in time to before the song started.
+        targetTimeMs = Math.max(0, targetTimeMs);
+      
+        if (FlxG.sound.music != null) {
+            FlxG.sound.music.time = targetTimeMs;
+        }
+      
+        PlayState.instance.handleSkippedNotes();
+        SongEventRegistry.handleSkippedEvents(PlayState.instance.songEvents, Conductor.instance.songPosition);
+      
+        Conductor.instance.update(FlxG.sound?.music?.time ?? 0.0);
+        PlayState.instance.resyncVocals();
+    }
+
+    function onNoteHit(ev:HitNoteScriptEvent) {
+        super.onNoteHit(ev);
+        if (ev.note.noteData.getMustHitNote()) PlayState.instance.vocals.playerVolume = 1;
+    }
+
+    function msToMinutesAndSeconds(ms:Float):String {
+        var seconds:Float = ms / 1000;
+        var minutes:Int = Std.int(seconds / 60);
+        var remainingSeconds:Int = Std.int(seconds % 60);
+        var formattedSeconds:String = (remainingSeconds < 10) ? "0" + remainingSeconds : remainingSeconds;     
+        return minutes + ":" + formattedSeconds;
+    }
+
+    function reset(a) {  
+        if (a != null) {
+            PlayState.instance.remove(a);
+            a.destroy();        
+            a = null;             
+        }   
+    }
+}

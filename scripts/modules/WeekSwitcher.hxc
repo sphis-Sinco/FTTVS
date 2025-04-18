@@ -1,0 +1,93 @@
+import funkin.ui.story.StoryMenuState;
+import funkin.ui.story.LevelTitle;
+import flixel.text.FlxText;
+import funkin.modding.module.Module;
+import funkin.data.story.level.LevelRegistry;
+import flixel.FlxG;
+
+/**
+ * Gives `modeText` a use.
+ */
+class StoryMenuSwitcher extends Module
+{
+  var displayingModdedLevels:Bool = false;
+
+  public function new()
+  {
+    super('StoryMenuSwitcher');
+  }
+
+  override function onUpdate(event:UpdateScriptEvent):Void
+  {
+    super.onUpdate(event);
+    if (FlxG.state is StoryMenuState)
+    {
+      if (FlxG.state.modeText != null)
+      {
+        FlxG.state.modeText.text = (displayingModdedLevels ? 'Mods' : 'Base Game')
+          + ' ['
+          + FlxG.state.controls.getDialogueNameFromToken("FREEPLAY_CHAR_SELECT", true)
+          + ' to switch]';
+        FlxG.state.modeText.screenCenter(0x01);
+      }
+      if (FlxG.state.controls.FREEPLAY_CHAR_SELECT && FlxG.state.modeText.visible)
+      {
+        switchMode(!displayingModdedLevels);
+      }
+    }
+  }
+
+  override function onStateChangeEnd(event:StateChangeScriptEvent):Void
+  {
+    if (event.targetState is StoryMenuState)
+    {
+      event.targetState.modeText = new FlxText(10, 10, 0, 'Base Game Levels [TAB to switch]');
+      event.targetState.modeText.setFormat('VCR OSD Mono', 32);
+      event.targetState.modeText.screenCenter(0x01);
+      event.targetState.modeText.visible = hasModdedLevels();
+      event.targetState.modeText.zIndex = 1000;
+      event.targetState.add(event.targetState.modeText);
+      switchMode(false);
+    }
+  }
+
+  function hasModdedLevels():Bool
+  {
+    return LevelRegistry.instance.listModdedLevelIds().length > 0;
+  }
+
+  function switchMode(moddedLevels:Bool):Void
+  {
+    displayingModdedLevels = moddedLevels;
+    buildLevelTitlesCustom();
+    FlxG.state.changeLevel(999999); // Jump past the end of the list to the beginning.
+    FlxG.state.changeDifficulty(0);
+  }
+
+  function buildLevelTitlesCustom():Void
+  {
+    FlxG.state.levelTitles.clear();
+
+    var levelIds:Array<String> = displayingModdedLevels ? LevelRegistry.instance.listModdedLevelIds() : LevelRegistry.instance.listBaseGameLevelIds();
+    var levelList:Array<String> = levelIds.filter(function(id) {
+      var levelData = LevelRegistry.instance.fetchEntry(id);
+      if (levelData == null) return false;
+
+      return levelData.isVisible();
+    });
+    if (levelList.length == 0) levelList = ['tutorial']; // Make sure there's at least one level to display.
+
+    for (levelIndex in 0...levelList.length)
+    {
+      var levelId:String = levelIds[levelIndex];
+      var level:Level = LevelRegistry.instance.fetchEntry(levelId);
+      if (level == null) continue;
+
+      var levelTitleItem:LevelTitle = new LevelTitle(0, Std.int(FlxG.state.levelBackground.y + FlxG.state.levelBackground.height + 10), level);
+      levelTitleItem.targetY = ((levelTitleItem.height + 20) * levelIndex);
+      levelTitleItem.screenCenter(0x01);
+      FlxG.state.levelTitles.add(levelTitleItem);
+    }
+    FlxG.state.levelList = levelList;
+  }
+}
