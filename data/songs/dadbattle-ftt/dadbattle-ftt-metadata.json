@@ -1,0 +1,17 @@
+{
+	"timeFormat": "ms",
+	"artist": "Vaderlings",
+	"charter": "SkyanUltra",
+	"playData": {
+		"stage": "stage [ftt]",
+		"noteStyle": "funkin",
+		"difficulties": ["easy", "normal", "hard"],
+		"characters": {"girlfriend": "gf", "opponent": "dad", "player": "bf"}
+	},
+	"songName": "Dadbattle (FTT)",
+	"timeChanges": [
+		{"t": 0, "bpm": 180}
+	],
+	"generatedBy": "Psych Engine v1.0.3 - Chart Editor V-Slice Exporter",
+	"version": "2.2.3"
+}

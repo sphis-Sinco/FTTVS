@@ -1,0 +1,17 @@
+{
+	"timeFormat": "ms",
+	"artist": "Rareblin",
+	"charter": "SkyanUltra",
+	"playData": {
+		"stage": "mainStage",
+		"noteStyle": "funkin",
+		"difficulties": ["easy", "normal", "hard"],
+		"characters": {"girlfriend": "gf", "opponent": "dad", "player": "bf"}
+	},
+	"songName": "Fresh (FTT)",
+	"timeChanges": [
+		{"t": 0, "bpm": 120}
+	],
+	"generatedBy": "Psych Engine v1.0.3 - Chart Editor V-Slice Exporter",
+	"version": "2.2.3"
+}
